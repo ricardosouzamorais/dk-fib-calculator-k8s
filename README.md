@@ -31,3 +31,41 @@ There is not **nodePort** property because it is not addressable or accessible f
 The **port** propertye is going to be how other pods or other objects inside of our cluster are going to access the **Pod** that we are kind of governing access to.
 
 The **targetPort** is going to be the port on the target **Pod** that we are poviding access to. The port that container provides its service.
+
+## Combination of files
+
+We could specify the **ClusterIP** and **Deployment** on the same file, as below:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      component: server
+  template:
+    metadata:
+      labels:
+        component: server
+    spec:
+      containers:
+        - name: server
+          image: ricardosouzamorais/multi-fib-server
+          ports:
+            - containerPort: 5000 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: server-cluster-ip-service
+spec:
+  type: ClusterIP
+  selector:
+    component: server
+  ports:
+    - port: 5000
+      targetPort: 5000
+```
