@@ -28,9 +28,9 @@ There is not **nodePort** property because it is not addressable or accessible f
 
 #### Equalities between NodePort and ClusterIP
 
-The **port** propertye is going to be how other pods or other objects inside of our cluster are going to access the **Pod** that we are kind of governing access to.
+The **port** property is going to be how other pods or other objects inside of our cluster are going to access the **Pod** that we are kind of governing access to.
 
-The **targetPort** is going to be the port on the target **Pod** that we are poviding access to. The port that container provides its service.
+The **targetPort** is going to be the port on the target **Pod** that we are providing access to. The port that container provides its service.
 
 ## Combination of files
 
@@ -69,3 +69,57 @@ spec:
     - port: 5000
       targetPort: 5000
 ```
+
+# Postgres PVC
+
+***PVC*** stands for Persistent Volume Claim.
+
+Without configuring a **PVC** we will have this kind of situation.
+
+![Postgres PVC](/docs/images/k8s-postgres-pvc.png)
+
+If we do not specify a persistent volume and **Pod** goes away, we will lose all data.
+
+![Postgres PVC - Lost Data](/docs/images/k8s-postgres-pvc-lost-data.png)
+
+Instead of writing data inside the container, we need to write data into this persistent volume that exists outside on host machine.
+
+![Postgres PVC on Host](/docs/images/k8s-postgres-pvc-host.png)
+
+## Replicas of Postgres on Deployment file
+
+You will notice that inside our postgres-deployment file we specified the number of replicas as ***ONE (1)***.
+
+In fact we can setup postgres to have some kind of replication or a clustering that is going to improve the availability and performance of our database. If we just increase the number of replicas to ***TWO (2)***, we would end up with a situation where two Pods that might be accessing the same volume but having two different databases accessing the same file system without them being aware of each other and have them very distinctly cooperate with eatch other, is a recipe for disaster.
+
+That is not just isolated to postgres world, it is for many other databases you are going to find the same problem. So for whatever reason you want to scale up your copy of postgres and make it more available, you have to go through some additional steps.
+
+# Volume - Container V.S. Kubernetes Terminology
+
+![Volume Terminology](/docs/images/k8s-volume-terminology.png)
+
+![Volume Access](/docs/images/k8s-volume-access.png)
+
+## Volume on Kubernetes
+
+We can have a Kubernetes Volume that could be accessed by any container inside that ***Pod***.
+
+![Volume in k8s world](/docs/images/k8s-volume.png)
+
+The downside is that the volume is tied to the ***Pod*** and so if ***Pod*** itself ever diest the volume dies and goes away as well.
+
+Volume will survive container restarts inside of a ***Pod***.
+
+## Volume V.S. Persistent Volume
+
+![Volume V.S. Persistente Volume](/docs/images/k8s-volume-vs-persistent-volume.png)
+
+Persistent is some type of long term durable storage that is not tied to any specific ***Pod*** or any specific container. 
+
+## Persistent Volume V.S. Persistent Volume Claim
+
+PVC are just like the advertisements, not actually volumes. They cannot persist anything just show the options available in the cluster.
+
+Inside our cluster we might have some number of persistent volumes that have been created ahead of time. They are actually instances of hard drives essentially that can be used right away for storage.
+
+Any persistent volume that is created ahead of time inside of our cluster is called **Statically provisioned Persistent Volume**. On the other hand, we also had another option that could have been create on the fly which is called **Dynamically provisioned Persistent Volume**.
