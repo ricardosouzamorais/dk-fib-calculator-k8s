@@ -62,7 +62,7 @@ app.get('/values/all', async (req, res) => {
 // The Redis library does not have Promisses support, so need to use callbacks
 app.get('/values/current', async (req, res) => {
     redisClient.hgetall('values', (err, values) => {
-        if (value) {
+        if (values) {
             res.send(values);
         } else {
             res.send([]);
