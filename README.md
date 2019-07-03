@@ -30,6 +30,16 @@ Check the appropriate [README file](docs/lb-ingress.md).
 
 # minikube Dashboard
 
-Run `minikube dashboard` to see the minikube dashboard
+Run `minikube dashboard` to see the minikube dashboard.
 
-# Deployment in Production env
+# Deployment in Production - Google Cloud
+
+Check the appropriate [README file](docs/google-cloud.md).
+
+## AWS V.S. Google Cloud
+
+Why are swapping to Google Cloud?
+*  Google created ***k8s***
+*  AWS only recently got ***k8s*** support
+*  Far, far easier to poke around ***k8s*** on Google Cloud
+*  Excellent documentation bor beginners

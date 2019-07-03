@@ -1,3 +1,5 @@
+# Cluster IP service
+
 Instead of using **NodePort** service (only good for dev purposes), we should use **ClusterIP** service.
 
 ![k8s Object Types Infra](./images/k8s-obj-types.png)

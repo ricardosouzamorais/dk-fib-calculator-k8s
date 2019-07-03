@@ -1,3 +1,5 @@
+# Load Balancer and Ingress
+
 ![Ingress and LoadBalancer](./images/k8s-services.png)
 
 LoadBalancer is a legacy way of getting some amount of traffic into your application.
