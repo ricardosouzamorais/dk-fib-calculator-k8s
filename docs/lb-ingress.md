@@ -42,6 +42,10 @@ Another deployment is setup inside your cluster, that is called **default-backen
 
 [Ingress Nginx Deployment](https://kubernetes.github.io/ingress-nginx/deploy)
 
+Commands to execute:
+*  `kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/mandatory.yaml`
+*  `minikube addons enable ingress`
+
 ### The Ingress Config File
 
 [ingress-service.yaml](k8s/ingress-service.yaml)
