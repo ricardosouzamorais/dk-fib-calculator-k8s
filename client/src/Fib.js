@@ -15,7 +15,7 @@ class Fib extends Component {
 
     async fetchValues() {
         let values = await axios.get('/api/values/current');
-        if (values.status === 200 && 
+        if (values.status >= 200 && values.status <= 399 &&
             values.headers['content-type'].includes('application/json')) {
             this.setState({ 
                 values: values.data 
@@ -25,7 +25,7 @@ class Fib extends Component {
 
     async fetchIndexes() {
         let seenIndexes = await axios.get('/api/values/all');
-        if (seenIndexes.status === 200 && 
+        if (seenIndexes.status >= 200 && seenIndexes.status <= 399 &&
             seenIndexes.headers['content-type'].includes('application/json')) {
             this.setState({ 
                 seenIndexes : seenIndexes.data 
@@ -47,7 +47,8 @@ class Fib extends Component {
 
     renderSeenIndexes() {
         // Default returning type when pulling data out of PostgreSQL 
-        return this.state.seenIndexes && this.state.seenIndexes instanceof Map && this.state.seenIndexes.map(({ number }) => number).join(', ');
+        console.log(typeof(this.state.seenIndexes));
+        return this.state.seenIndexes && this.state.seenIndexes.map(({ number }) => number).join(', ');
     }
 
     renderValues() {
