@@ -11,20 +11,28 @@ services:
 # 3. Look at the default install directory and source the file
 # 4. Install kubectl inside out Travis env
 # 5. Authorize gcloud to execute stuff (Service Account is similar to AIM used in AWS) 
+# 6. Set project on GCP
+# 7. Set the zone of the project
+# 8. Tell to reach cluster and wotk with our cluster "mult-cluster"
+# 9. Log in to the docker CLI. The echo command sends the value of env variable and then
+#    essentially emit that over stdin as input to the next command (after pipe)
 before_install:
   - openssl aes-256-cbc -K $encrypted_0c35eebf403c_key -iv $encrypted_0c35eebf403c_iv -in service-account.json.enc -out service-account.json -d
   - curl https://sdk.cloud.google.com | bash > /dev/null;
   - source $HOME/google-cloud-sdk/path.bash.inc
   - gcloud components update kubectl
   - gcloud auth activate-service-account --key-file service-account.json
-
-#  - docker build -t ricardosouzamorais/client-tests -f ./client/Dockerfile.dev ./client
+  - gcloud config set project multi-k8s-249701
+  - gcloud config set compute/zone southamerica-east1-a
+  - gcloud container clusters get-credentials multi-cluster
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdi 
+  - docker build -t ricardosouzamorais/client-tests -f ./client/Dockerfile.dev ./client
 
 # It always expects that the tests run and terminates, not keep the terminal opened.
-# That is different on "npm run test" because it hangs.
-# To solve that, we need to exit with "-- --coverage"
+# Using Travis, we need to make sure the tests exit after running and don't cause our builds to fail.
+#  -- --coverage => has not worked as before
 script:
-  - docker run ricardosouzamorais/client-tests npm run test -- --coverage
+  - docker run -e CI=true ricardosouzamorais/client-tests npm run test
 
 # After tests being executed, create the images for production
 after_success:
