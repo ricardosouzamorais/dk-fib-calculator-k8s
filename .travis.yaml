@@ -1,0 +1,43 @@
+# We are using docker, so we need sudo.
+# We need docker service to be pre-installed as soon as we try to run our 
+# build because we need Travis to run our builds and test container after that.
+sudo: required
+services:
+  - docker
+  
+# Commands run before the tests
+# 1. Unencrypt service-account.json file
+# 2. Download and install Google Cloud SDK
+# 3. Look at the default install directory and source the file
+# 4. Install kubectl inside out Travis env
+# 5. Authorize gcloud to execute stuff (Service Account is similar to AIM used in AWS) 
+before_install:
+  - openssl aes-256-cbc -K $encrypted_0c35eebf403c_key -iv $encrypted_0c35eebf403c_iv -in service-account.json.enc -out service-account.json -d
+  - curl https://sdk.cloud.google.com | bash > /dev/null;
+  - source $HOME/google-cloud-sdk/path.bash.inc
+  - gcloud components update kubectl
+  - gcloud auth activate-service-account --key-file service-account.json
+
+#  - docker build -t ricardosouzamorais/client-tests -f ./client/Dockerfile.dev ./client
+
+# It always expects that the tests run and terminates, not keep the terminal opened.
+# That is different on "npm run test" because it hangs.
+# To solve that, we need to exit with "-- --coverage"
+script:
+  - docker run ricardosouzamorais/client-tests npm run test -- --coverage
+
+# After tests being executed, create the images for production
+after_success:
+  - docker build -t ricardosouzamorais/multi-fib-client ./client
+  - docker build -t ricardosouzamorais/multi-fib-nginx  ./nginx
+  - docker build -t ricardosouzamorais/multi-fib-server ./server
+  - docker build -t ricardosouzamorais/multi-fib-worker ./worker
+  # Log in to the docker CLI
+  # The echo command sends the value of env variable and then
+  # essentially emit that over stdin as input to the next command (after pipe)
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take images and push them to docker hub
+  - docker push ricardosouzamorais/multi-fib-client
+  - docker push ricardosouzamorais/multi-fib-nginx
+  - docker push ricardosouzamorais/multi-fib-server
+  - docker push ricardosouzamorais/multi-fib-worker
