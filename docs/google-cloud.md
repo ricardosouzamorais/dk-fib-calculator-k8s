@@ -25,12 +25,28 @@ services:
 *  Install kubectl inside out Travis env
 *  Authorize gcloud to execute stuff (Service Account is similar to AIM used in AWS)
 
+*  Unencrypt service-account.json file
+*  Download and install Google Cloud SDK
+*  Look at the default install directory and source the file
+*  Install kubectl inside out Travis env
+*  Authorize gcloud to execute stuff (Service Account is similar to AIM used in AWS) 
+*  Set project on GCP
+*  Set the zone of the project
+*  Tell to reach cluster and wotk with our cluster "mult-cluster"
+*  Log in to the docker CLI. The echo command sends the value of env variable and then essentially emit that over stdin as input to the next command (after pipe)
+
 ```yaml
 before_install:
+  - openssl aes-256-cbc -K $bla -iv $bla2 -in service-account.json.enc -out service-account.json -d
   - curl https://sdk.cloud.google.com | bash > /dev/null;
   - source $HOME/google-cloud-sdk/path.bash.inc
   - gcloud components update kubectl
   - gcloud auth activate-service-account --key-file service-account.json
+  - gcloud config set project multi-k8s-249701
+  - gcloud config set compute/zone southamerica-east1-a
+  - gcloud container clusters get-credentials multi-cluster
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdi 
+  - docker build -t ricardosouzamorais/client-tests -f ./client/Dockerfile.dev ./client
 ```
 
 ### Service Account

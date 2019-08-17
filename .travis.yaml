@@ -4,17 +4,24 @@
 sudo: required
 services:
   - docker
-  
+
+# 1st env gets the SHA of a commit to be used inside deploy.sh
+# 2nd env tells the Google Cloud SDK to not display any prompts that require user input
+env:
+  global:
+    - GIT_SHA=$(git rev-parse HEAD)
+    - CLOUDSDK_CORE_DISABLE_PROMPTS=1
+
 # Commands run before the tests
 # 1. Unencrypt service-account.json file
 # 2. Download and install Google Cloud SDK
 # 3. Look at the default install directory and source the file
-# 4. Install kubectl inside out Travis env
+# 4. Install kubectl inside our Travis env
 # 5. Authorize gcloud to execute stuff (Service Account is similar to AIM used in AWS) 
 # 6. Set project on GCP
 # 7. Set the zone of the project
-# 8. Tell to reach cluster and wotk with our cluster "mult-cluster"
-# 9. Log in to the docker CLI. The echo command sends the value of env variable and then
+# 8. Tell to reach cluster and work with our cluster "multi-cluster"
+# 9. Log in to the docker hub. The echo command sends the value of env variable and then
 #    essentially emit that over stdin as input to the next command (after pipe)
 before_install:
   - openssl aes-256-cbc -K $encrypted_0c35eebf403c_key -iv $encrypted_0c35eebf403c_iv -in service-account.json.enc -out service-account.json -d
@@ -34,18 +41,9 @@ before_install:
 script:
   - docker run -e CI=true ricardosouzamorais/client-tests npm run test
 
-# After tests being executed, create the images for production
-after_success:
-  - docker build -t ricardosouzamorais/multi-fib-client ./client
-  - docker build -t ricardosouzamorais/multi-fib-nginx  ./nginx
-  - docker build -t ricardosouzamorais/multi-fib-server ./server
-  - docker build -t ricardosouzamorais/multi-fib-worker ./worker
-  # Log in to the docker CLI
-  # The echo command sends the value of env variable and then
-  # essentially emit that over stdin as input to the next command (after pipe)
-  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
-  # Take images and push them to docker hub
-  - docker push ricardosouzamorais/multi-fib-client
-  - docker push ricardosouzamorais/multi-fib-nginx
-  - docker push ricardosouzamorais/multi-fib-server
-  - docker push ricardosouzamorais/multi-fib-worker
+# Travis does not have a built-in script to run for K8S, so we need to do it through script
+deploy:
+  provider: script 
+  script: bash ./deploy.sh
+  on:
+    branch: master
