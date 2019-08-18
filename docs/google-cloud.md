@@ -121,7 +121,13 @@ We need to create a load balancer service instead of ingress service and map it 
 
 Remember that we want [ingress-nginx](https://kubernetes.github.io/ingress-nginx/deploy/#using-helm) and this time we can install using **Helm** instead of running all commands one by one.
 
-### Helm
+### Configuration
+
+The **ingress** service that will be seen at **Services** tab on Kubernetes Engine on GCP is just the configuration we do have in `ingress-service.yaml` file that is shipped off to the ingress controller we installed on cluster using **Helm**.
+
+This **ingress controller** is both making change to the Nginx and hosting Nginx simultaneously.
+
+## Helm
 
 ![Helm + Tiller](./images/k8s-helm-tiller.png)
 
@@ -129,13 +135,13 @@ Remember that we want [ingress-nginx](https://kubernetes.github.io/ingress-nginx
 
 When we install **Helm**, we actually install two pieces of software. The first is the **Helm** also called **Helm Client** which is essencially a CLI tool used to issue commands. The second if the **Tiller** also called **Tiller Server** that runs inside our **ks8** cluster and is responsible for modifying our cluster in some fashion and install additional objects inside of it.
 
-#### Installing
+### Installing
 
 Visit: https://helm.sh/docs/using_helm/#installing-helm
 
 Use the **from script** commands and after installing, do not run **helm init** before configuring the following.
 
-##### Create a service account for Tiller
+#### Create a service account for Tiller
 
 Google’s GKE hosted Kubernetes platform enables RBAC by default. You will need to create a service account for tiller, and use the –service-account flag when initializing the helm server.
 
@@ -148,3 +154,5 @@ https://helm.sh/docs/using_helm/#role-based-access-control
 *  Create a new cluster role binding (applies to the entire cluster instead of a namespace only as role binding does) with the role `cluster-admin` (pre-set role) and assign it to service account `tiller` that has been created
     `kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller`
 *  Now, you can start helm but telling him which service account to be assigned: `helm init --service-account tiller --upgrade`; `upgrade`just make sure we are using the latest version of **Helm**
+
+
