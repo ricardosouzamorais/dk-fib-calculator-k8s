@@ -32,7 +32,7 @@ before_install:
   - gcloud config set project multi-k8s-249701
   - gcloud config set compute/zone southamerica-east1-a
   - gcloud container clusters get-credentials multi-cluster
-  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdi 
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin 
   - docker build -t ricardosouzamorais/client-tests -f ./client/Dockerfile.dev ./client
 
 # It always expects that the tests run and terminates, not keep the terminal opened.
