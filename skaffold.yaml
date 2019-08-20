@@ -1,0 +1,52 @@
+# In replace of docker compose that does not deal with k8s: skaffold dev
+#
+# - build/local/push = false
+# When doing the build, by default, skaffold tries to push the image 
+# from Docker Hub or whatever your Docker repository is
+#
+# - sync
+# Anytime skaffold sees a javascript, css or html file change sync it
+# It is done by mode 2 (inject updated files into the Cliend pod, relying 
+# on react app to automatically update itself).
+#  If the change is not done in one of these three, skaffoldw ill use 
+# mode 1 (rebuild client image from stratch and update k8s)
+# 
+# We use the sync because our dockerfile for dev uses stuff that can detect
+# changes on code, for server and worker based on nodemon.
+apiVersion: skaffold/v1beta2
+kind: Config
+build:
+  local: 
+    push: false
+  artifacts:
+    - image: ricardosouzamorais/multi-fib-client
+      context: client
+      docker:
+        dockerfile: Dockerfile.dev
+      sync:
+        '**/*.js': .   
+        '**/*.css': .
+        '**/*.html': .
+    - image: ricardosouzamorais/multi-fib-server
+      context: server
+      docker:
+        dockerfile: Dockerfile.dev
+      sync:
+        '**/*.js': .   
+    - image: ricardosouzamorais/multi-fib-worker
+      context: worker
+      docker:
+        dockerfile: Dockerfile.dev
+      sync:
+        '**/*.js': .
+deploy:
+  kubectl:
+    manifests:
+      - k8s/client-deployment.yaml
+      - k8s/server-deployment.yaml
+      - k8s/worker-deployment.yaml
+      - k8s/client-cluster-ip-service.yaml
+      - k8s/server-cluster-ip-service.yaml
+# All the files above will be managed by skaffold and as soon as you close the 
+# terminal with skaffold, you will lose all those deployments, so keep that in mind
+# for persistent volume, databases and some stuff that you want to keep data
